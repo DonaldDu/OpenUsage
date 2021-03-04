@@ -1,0 +1,62 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    ext.kotlin_version = "1.4.31"
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.1.2"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+subprojects { project ->
+    ext.publishGAV = { String gav ->
+        apply plugin: 'maven-publish'
+        project.afterEvaluate {
+            if (project.hasProperty('android')) {
+                task sourceJar(type: Jar) {
+                    from android.sourceSets.main.java.srcDirs
+                    classifier "sources"
+                }
+            } else if (project.plugins.hasPlugin('java')) {
+                task sourceJar(type: Jar) {
+                    from sourceSets.main.allJava
+                    classifier "sources"
+                }
+            }
+            publishing {
+                publications {
+                    maven(MavenPublication) {
+                        if (project.hasProperty('sourceJar')) artifact(sourceJar)
+                        if (project.plugins.hasPlugin('com.android.library')) {
+                            from components.release
+                        } else if (project.plugins.hasPlugin('java-library')) {
+                            from components.java
+                        } else if (project.plugins.hasPlugin('java')) {
+                            from components.java
+                        }
+                        def data = gav.split(":")
+                        groupId = data[0]
+                        artifactId = data[1]
+                        version = data[2]
+                    }
+                }
+            }
+        }
+    }
+}
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
