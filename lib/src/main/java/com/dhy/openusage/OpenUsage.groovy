@@ -14,7 +14,15 @@ class OpenUsage {
         def rootProject = project.rootProject
         OpenUsageUtil.INSTANCE.storeFile = rootProject.file("./.idea/caches/OpenUsage.json")
         OpenUsageUtil.INSTANCE.useBuffer = rootProject.findProperty('OPEN_USAGE_USE_BUFFER') != 'false'
-
+        OpenUsageUtil.INSTANCE.log = rootProject.findProperty('OPEN_USAGE_LOG') == 'true'
+        OpenUsageUtil.INSTANCE.newUrl = rootProject.findProperty('OPEN_USAGE_URL')
+        def delayTime = rootProject.findProperty('OPEN_USAGE_DELAY_TIME_MS')
+        if (delayTime != null) {
+            try {
+                OpenUsageUtil.INSTANCE.delayTime = delayTime.toString().toLong()
+            } catch (ignored) {
+            }
+        }
         def app = new UsingApp()
         app.appId = project.extensions.android.defaultConfig.applicationId
         app.name = rootProject.findProperty('OPEN_USAGE_APP_NAME')

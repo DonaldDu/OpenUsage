@@ -10,10 +10,12 @@ import java.io.IOException
 import java.util.*
 
 object OpenUsageUtil {
+    var log = false
+    var newUrl: String? = null
     var enqueue = true
     var useBuffer = true
     var storeFile: File? = null
-
+    var delayTime: Long = 15 * 1000
     private const val url = "https://openusage.avosapps.us/report"
 
     //    private const val url = "http://localhost:3000/report"
@@ -59,7 +61,7 @@ object OpenUsageUtil {
             override fun run() {
                 report(reports)
             }
-        }, 15 * 1000)
+        }, delayTime)
         this.timer = timer
     }
 
@@ -68,7 +70,7 @@ object OpenUsageUtil {
         reports.forEach {
             val json = gson.toJson(it)
             val request = Request.Builder()
-                .url(url)
+                .url(newUrl ?: url)
                 .post(json.toRequestBody("application/json".toMediaType()))
                 .build()
             if (enqueue) httpClient.newCall(request).enqueue(callback)
@@ -87,12 +89,13 @@ object OpenUsageUtil {
 
     private val callback = object : Callback {
         override fun onFailure(call: Call, e: IOException) {
-            println("onFailure:  ${e.message}")
+            if (log) println("onFailure:  ${e.message}")
         }
 
         override fun onResponse(call: Call, response: Response) {
-            println("onResponse: ${response.code} => ${response.message}")
+            if (log) println("onResponse: ${response.code} => ${response.message}")
             if (response.isSuccessful) saveToDisk()
+            response.body?.close()
         }
     }
     private var diskBuffer: String? = null

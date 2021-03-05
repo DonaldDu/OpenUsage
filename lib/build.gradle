@@ -13,7 +13,7 @@ compileGroovy {
     classes.dependsOn compileGroovy
 }
 
-publishGAV("com.gitee.DonaldDu:OpenUsage:1.0")
+publishGAV("com.github.DonaldDu:OpenUsage:1.0.1")
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
